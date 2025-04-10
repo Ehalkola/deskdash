@@ -1,0 +1,202 @@
+Installiations & update commands:
+
+## Step 1: Install Docker Engine:
+
+Source: https://docs.docker.com/engine/install/ubuntu/
+
+# Uninstall all conficting packages
+for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+
+# Set up Docker's apt repository with following commands (these can be found from their website):
+
+# Add Docker's official GPG key:
+- sudo apt-get update
+- sudo apt-get install ca-certificates curl
+- sudo install -m 0755 -d /etc/apt/keyrings
+- sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+- sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+- echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+- sudo apt-get update
+
+# Install the lastest version
+- sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Test if installation was succesful:
+- sudo docker run hello-world
+
+## Step 2: Install compatible ROS version, here is a link what was used within these instructions: https://docs.ros.org/en/humble/Installation/Ubuntu-Install-Debs.html
+
+# Setup Locale & Confirm that you have locale that supports UTF-8
+- locale  # check for UTF-8
+- sudo apt update && sudo apt install locales
+- sudo locale-gen en_US en_US.UTF-8
+- sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+- export LANG=en_US.UTF-8
+
+- locale  # verify settings
+
+# Add the ROS2 GPG key to apt
+- sudo apt install software-properties-common
+- sudo add-apt-repository universe
+
+# Add the repository to your sources list
+- echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+# Update the cache
+- sudo apt update
+
+# Ensure that your system is up to date
+- sudo apt upgrade 
+
+# Install ROS Desktop
+- sudo apt install ros-$ROS_DISTRO-desktop # Check below which distro was used for the these,
+- sudo apt install ros-humble-desktop	# <--instructions
+
+# Source your setup file to set up your environment
+# Replace ".bash" with your shell if you're not using bash
+# Possible values are: setup.bash, setup.sh, setup.zsh
+- source /opt/ros/humble/setup.bash
+
+## Step 3: Installed Ros2 libraries to run Slamtech Lidars with:
+
+# From terminal, source your ROS2 environment
+- source /opt/ros/$ROS_DISTRO/setup.bash
+
+# Create a workspace directory
+- mkdir -p ~/{your project repository}/lidar_ws/src
+
+# Go into your workspace directory's src (source) directory
+- cd ~/{your project repository}/lidar_ws/src
+
+# Clone Slamtech's Github repository for Slamtech RPI lidars
+- git clone https://github.com/Slamtec/sllidar_ros2.git
+
+# Go to your workspace directory
+- cd ~/{your project repository}/lidar_ws/
+
+# Build ROS2 packages, here you will see some errors/warnings, these can be ignored
+- colcon build --symlink-install
+
+# Source the package you created
+- source ~/{your project repository}/lidar_ws/setup.bash
+
+# Connect your lidar to your device (Jetson Orin Nano, Rasp Pi 5 etc), Check in which port 
+# your lidar is connected to
+- ls -la /dev | grep USB
+
+# Edit permissions to allow everyone read, write, execute permissions on the lidar usb-port
+- sudo chmod 777 /dev/ttyUSB0
+
+# Run your lidar from terminal
+- ros2 launch sllidar_ros2 view_sllidar_{your slamtech lidar}_launch.py # A3 was used for these
+- ros2 launch sllidar_ros2 view_sllidar_a3_launch.py # <-- instructions
+
+Step 4: Install all depencies:
+
+# Install python3-rosdep and ros-humble-slam-toolbox
+- sudo apt-get install python3-rosdep ros-humble-slam-toolbox ros-humble-navigation2 ros-humble-nav2-bringup ros-humble-tf-transformations
+# Or below
+- sudo apt-get install python3-rosdep ros-$ROS_DISTRO-slam-toolbox ros-$ROS_DISTRO-navigation2 ros-$ROS_DISTRO-nav2-bringup ros-$ROS_DISTRO-tf-transformations
+
+# Git clone rf2o_laser_odometry
+- git clone https://github.com/Adlink-ROS/rf2o_laser_odometry.git
+
+Step 5: To be able to create a map using the Slamtech RPI lidar
+
+# Create your own repository from and clone it into your project directory: https://github.com/sohanjanaka/ros2-docker-quickstarter.git
+# You can also clone straight from the github link above, but we made our own and cloned that repository
+
+# In Github:
+
+# Find Use this template and create your own repository with the template:
+# name your repository & click create
+# For the instructions the repository was named ros2-docker-rc_car
+
+# From terminal:
+
+# Check that your system is up to date
+- sudo apt update
+
+# Go to your directory
+- cd ~/project_deskdash/
+
+# Clone your git into your project repository
+- git clone https://github.com/Ehalkola/ros2-docker-rc_car_instructions.git
+
+# Go to the directory created from the git clone
+- cd ~/project_deskdash/ros2-docker-rc_car
+
+# Open the directory in Vscode, we found this as the easiest way
+- code .
+
+# Within the directory find urdf directory under my_python_package, where you should be able to find file: robot.urdf.xacro
+
+# Open the file and copy the base_link tree & create your own for your laser or copy from here
+    <link name="laser">
+    </link>
+    <joint name="laser_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="laser"/>
+        <origin xyz="0 0 0" />
+    </joint>
+
+- Press Ctrl + S to save the file
+
+- sudo docker compose build && sudo docker compose up
+
+# Make a tf2_frames directory to troubleshoot and see the tf_tree
+- mkdir tf2_frames
+
+# Go to the tf2_frames directory to run the command to see tf_tree structure
+- cd tf2_frames/
+
+# Create a file from tf_tree to see the tf structure
+- ros2 run tf2_tools view_frames
+
+# You can see the structure from file like this frames_2025-04-07_14.11.53.pdf
+# Open the file and check if the structure is correct
+
+# Create directory for your maps within your project directory
+- mkdir maps
+
+## Step 6: Create a map from the laser input from Lidar
+
+# Run your lidar
+- ros2 launch sllidar_ros2 view_sllidar_a3_launch.py
+
+# Go into your git repository project
+- cd ros2-docker-rc_car
+
+# Change to robot_tf branch
+- git checkout robot_tf
+
+# Run Docker to run ros2 robot project
+- sudo docker compose build && sudo docker compose up
+
+# Go to rf2o_laser_odometry directory and source the installiation
+- cd rf2o_laser_odometry directory 
+- source install/setup.bash
+
+# Run rf2o_laser_odometry for odom to create odom-link
+- ros2 launch rf2o_laser_odometry rf2o_laser_odometry.launch.py
+
+# Run Slam-toolbox for map-link
+- ros2 launch slam_toolbox online_async_launch.py
+
+## Step 7: Open rviz2 add tf and map
+
+# In Rviz2 add tf and map you can add them from left-side corner button add and find tf and map
+# From the global options select map
+# For the map, click map and put Topic as a map
+# Now all should be set
+# Nw you can drive around the room and check that everything is captured correctly
+
+# From your project directory, Save the Map, the file will appear into your map folder
+- ros2 run nav2_map_server map_saver_cli -f maps/test
+
+

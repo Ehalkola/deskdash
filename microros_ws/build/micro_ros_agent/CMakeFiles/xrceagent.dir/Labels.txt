@@ -1,0 +1,13 @@
+# Target labels
+ xrceagent
+# Source files and their labels
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/CMakeFiles/xrceagent
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/CMakeFiles/xrceagent.rule
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/CMakeFiles/xrceagent-complete.rule
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/agent/src/xrceagent-stamp/xrceagent-build.rule
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/agent/src/xrceagent-stamp/xrceagent-configure.rule
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/agent/src/xrceagent-stamp/xrceagent-download.rule
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/agent/src/xrceagent-stamp/xrceagent-install.rule
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/agent/src/xrceagent-stamp/xrceagent-mkdir.rule
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/agent/src/xrceagent-stamp/xrceagent-patch.rule
+/home/robotics/project_deskdash/microros_ws/build/micro_ros_agent/agent/src/xrceagent-stamp/xrceagent-update.rule
